@@ -1,0 +1,458 @@
+/* ==========================================================================
+   إعدادات أساسية (Base Reset) وخطوط
+   ========================================================================== */
+   @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&family=Share+Tech+Mono&display=swap');
+
+   :root {
+       /* لوحة الألوان الهندسية السلكية (Blueprint Color Palette) */
+       --bg-deep: #0a1128;
+       --grid-line: #1c2541;
+       --cyan-bright: #00f5d4;
+       --cyan-glow: rgba(0, 245, 212, 0.4);
+       --blue-electric: #00b4d8;
+       --orange-alert: #f77f00;
+       --white-pure: #ffffff;
+       --text-muted: #8d99ae;
+       --danger-red: #ef233c;
+       
+       /* إعدادات الشاشة الوهمية للـ Blueprint */
+       --blueprint-grid-size: 40px;
+   }
+   
+   * {
+       margin: 0;
+       padding: 0;
+       box-sizing: border-box;
+       /* منع التحديد الافتراضي للنصوص للحفاظ على الإحساس باللعبة */
+       user-select: none; 
+       -webkit-user-select: none;
+   }
+   
+   html, body {
+       width: 100%;
+       height: 100%;
+       background-color: #000;
+       overflow: hidden;
+       font-family: 'Tajawal', sans-serif;
+       color: var(--white-pure);
+       /* حظر جميع أفعال اللمس الافتراضية للمتصفح (كالتمرير والتكبير) */
+       touch-action: none;
+       display: flex;
+       justify-content: center;
+       align-items: center;
+   }
+   
+   /* ==========================================================================
+      الهيكل الرئيسي للعبة (App Container)
+      ========================================================================== */
+   #app-container {
+       position: relative;
+       width: 100%;
+       height: 100%;
+       max-width: 480px; /* تقييد العرض للأجهزة المكتبية ليتطابق مع نسبة الجوال */
+       max-height: 800px;
+       background-color: var(--bg-deep);
+       /* رسم خلفية المخطط الهندسي (Blueprint Grid) باستخدام تدرجات CSS */
+       background-image: 
+           linear-gradient(var(--grid-line) 1px, transparent 1px),
+           linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+       background-size: var(--blueprint-grid-size) var(--blueprint-grid-size);
+       box-shadow: 0 0 30px rgba(0, 245, 212, 0.1);
+       overflow: hidden;
+       /* التوسيط في الشاشات الكبيرة */
+       margin: 0 auto;
+   }
+   
+   /* ==========================================================================
+      محرك الرسم (Canvas)
+      ========================================================================== */
+   #game-canvas {
+       position: absolute;
+       top: 0;
+       left: 0;
+       width: 100%;
+       height: 100%;
+       z-index: 10; /* طبقة تحت الـ UI */
+       /* تحسين العرض للأشياء المرسومة على الكانفاس لتجنب التشويش */
+       image-rendering: optimizeSpeed; 
+       image-rendering: -moz-crisp-edges;
+       image-rendering: -webkit-optimize-contrast;
+       image-rendering: optimize-contrast;
+   }
+   
+   /* ==========================================================================
+      شاشات واجهة المستخدم (UI Screens)
+      ========================================================================== */
+   .ui-screen {
+       position: absolute;
+       top: 0;
+       left: 0;
+       width: 100%;
+       height: 100%;
+       display: flex;
+       flex-direction: column;
+       justify-content: center;
+       align-items: center;
+       z-index: 50; /* فوق الكانفاس */
+       padding: 20px;
+       transition: opacity 0.3s ease-in-out;
+       backdrop-filter: blur(3px);
+       background: rgba(10, 17, 40, 0.6);
+   }
+   
+   /* خلفية معتمة للشاشات المتراكبة (Pause / Result / Modal) */
+   .overlay-bg {
+       background: rgba(10, 17, 40, 0.85);
+       backdrop-filter: blur(6px);
+   }
+   
+   /* حالة التبديل للإظهار والإخفاء */
+   .hidden {
+       display: none !important;
+       opacity: 0;
+       pointer-events: none;
+   }
+   
+   .active {
+       display: flex;
+       opacity: 1;
+       pointer-events: auto;
+   }
+   
+   /* ==========================================================================
+      النصوص والعناوين (Typography)
+      ========================================================================== */
+   .title-container {
+       text-align: center;
+       margin-bottom: 50px;
+   }
+   
+   h1 {
+       font-family: 'Share Tech Mono', monospace;
+       font-size: 4rem;
+       line-height: 1;
+       color: var(--cyan-bright);
+       text-shadow: 0 0 15px var(--cyan-glow), 0 0 30px var(--cyan-glow);
+       letter-spacing: 5px;
+       margin-bottom: 5px;
+   }
+   
+   h2 {
+       font-family: 'Tajawal', sans-serif;
+       font-weight: 900;
+       font-size: 2rem;
+       color: var(--white-pure);
+       letter-spacing: 2px;
+       text-transform: uppercase;
+   }
+   
+   h3 {
+       font-size: 1.5rem;
+       color: var(--orange-alert);
+       margin-bottom: 15px;
+   }
+   
+   .subtitle {
+       font-family: 'Share Tech Mono', monospace;
+       font-size: 1rem;
+       color: var(--blue-electric);
+       margin-top: 10px;
+       letter-spacing: 2px;
+   }
+   
+   /* ==========================================================================
+      الأزرار والتفاعلات (Buttons & Actions)
+      ========================================================================== */
+   .menu-actions {
+       display: flex;
+       flex-direction: column;
+       gap: 15px;
+       width: 100%;
+       max-width: 300px;
+   }
+   
+   .menu-actions.row {
+       flex-direction: row;
+       justify-content: center;
+   }
+   
+   .bottom-actions {
+       position: absolute;
+       bottom: 30px;
+   }
+   
+   .action-btn {
+       font-family: 'Tajawal', sans-serif;
+       font-size: 1.2rem;
+       font-weight: 700;
+       padding: 15px 20px;
+       border: 2px solid;
+       background: transparent;
+       color: var(--white-pure);
+       cursor: pointer;
+       text-transform: uppercase;
+       letter-spacing: 1px;
+       transition: all 0.2s ease;
+       position: relative;
+       overflow: hidden;
+       border-radius: 4px;
+   }
+   
+   /* تأثير المسح الضوئي (Scanline Effect) على الأزرار عند المرور */
+   .action-btn::before {
+       content: '';
+       position: absolute;
+       top: 0;
+       left: -100%;
+       width: 50%;
+       height: 100%;
+       background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+       transform: skewX(-20deg);
+       transition: left 0.4s ease;
+   }
+   
+   .action-btn:hover::before {
+       left: 150%;
+   }
+   
+   .action-btn:active {
+       transform: scale(0.95);
+   }
+   
+   /* ألوان الأزرار المتنوعة */
+   .action-btn.primary {
+       border-color: var(--cyan-bright);
+       color: var(--cyan-bright);
+       box-shadow: inset 0 0 10px rgba(0, 245, 212, 0.1), 0 0 10px rgba(0, 245, 212, 0.2);
+   }
+   
+   .action-btn.primary:hover {
+       background: rgba(0, 245, 212, 0.1);
+       box-shadow: inset 0 0 20px rgba(0, 245, 212, 0.3), 0 0 20px rgba(0, 245, 212, 0.4);
+   }
+   
+   .action-btn.secondary {
+       border-color: var(--blue-electric);
+       color: var(--blue-electric);
+   }
+   
+   .action-btn.secondary:hover {
+       background: rgba(0, 180, 216, 0.1);
+   }
+   
+   .action-btn.danger {
+       border-color: var(--danger-red);
+       color: var(--danger-red);
+       font-size: 1rem;
+   }
+   
+   .action-btn.danger:hover {
+       background: rgba(239, 35, 60, 0.1);
+   }
+   
+   /* ==========================================================================
+      شاشة المعلومات أثناء اللعب (HUD)
+      ========================================================================== */
+   #hud {
+       position: absolute;
+       top: 0;
+       left: 0;
+       width: 100%;
+       padding: 15px 20px;
+       display: flex;
+       justify-content: space-between;
+       align-items: center;
+       z-index: 20;
+       background: linear-gradient(180deg, rgba(10, 17, 40, 0.9) 0%, transparent 100%);
+       pointer-events: none; /* للسماح باللمس من خلال الـ HUD للكانفاس */
+       font-family: 'Share Tech Mono', monospace;
+   }
+   
+   .hud-stat {
+       color: var(--cyan-bright);
+       font-size: 1.1rem;
+       text-shadow: 0 0 5px var(--cyan-glow);
+   }
+   
+   .hud-stat span {
+       color: var(--white-pure);
+       font-weight: bold;
+   }
+   
+   .icon-btn {
+       pointer-events: auto; /* إعادة تفعيل اللمس للزر فقط */
+       background: transparent;
+       border: 1px solid var(--blue-electric);
+       color: var(--blue-electric);
+       width: 40px;
+       height: 40px;
+       border-radius: 50%;
+       font-size: 1.2rem;
+       display: flex;
+       justify-content: center;
+       align-items: center;
+       cursor: pointer;
+       transition: all 0.2s ease;
+   }
+   
+   .icon-btn:hover {
+       background: rgba(0, 180, 216, 0.2);
+       box-shadow: 0 0 10px rgba(0, 180, 216, 0.5);
+   }
+   
+   /* ==========================================================================
+      شاشة اختيار المراحل (Level Select Grid)
+      ========================================================================== */
+   .grid-container {
+       display: grid;
+       grid-template-columns: repeat(4, 1fr);
+       gap: 15px;
+       margin-top: 30px;
+       width: 100%;
+       max-width: 400px;
+       max-height: 50vh;
+       overflow-y: auto;
+       padding-right: 5px; /* لمساحة شريط التمرير */
+   }
+   
+   /* تخصيص شريط التمرير لقائمة المراحل */
+   .grid-container::-webkit-scrollbar { width: 6px; }
+   .grid-container::-webkit-scrollbar-track { background: rgba(28, 37, 65, 0.5); border-radius: 3px; }
+   .grid-container::-webkit-scrollbar-thumb { background: var(--blue-electric); border-radius: 3px; }
+   
+   .level-btn {
+       background: transparent;
+       border: 1px solid var(--grid-line);
+       color: var(--text-muted);
+       padding: 15px 0;
+       font-family: 'Share Tech Mono', monospace;
+       font-size: 1.2rem;
+       cursor: pointer;
+       position: relative;
+       transition: all 0.2s ease;
+       border-radius: 4px;
+       display: flex;
+       flex-direction: column;
+       align-items: center;
+       gap: 5px;
+   }
+   
+   .level-btn.unlocked {
+       border-color: var(--blue-electric);
+       color: var(--white-pure);
+       box-shadow: inset 0 0 10px rgba(0, 180, 216, 0.1);
+   }
+   
+   .level-btn.unlocked:hover {
+       background: rgba(0, 180, 216, 0.1);
+       transform: translateY(-2px);
+   }
+   
+   .level-btn.locked {
+       opacity: 0.5;
+       cursor: not-allowed;
+       background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(28, 37, 65, 0.2) 10px, rgba(28, 37, 65, 0.2) 20px);
+   }
+   
+   .level-stars {
+       display: flex;
+       gap: 2px;
+       font-size: 0.8rem;
+       height: 12px;
+   }
+   
+   .star { color: var(--grid-line); }
+   .star.earned { color: var(--orange-alert); text-shadow: 0 0 5px var(--orange-alert); }
+   
+   /* ==========================================================================
+      شاشة النتائج والتسويق (Result & Promo)
+      ========================================================================== */
+   .result-stats {
+       text-align: center;
+       margin: 30px 0;
+       font-family: 'Share Tech Mono', monospace;
+       font-size: 1.2rem;
+       color: var(--cyan-bright);
+       background: rgba(10, 17, 40, 0.8);
+       border: 1px solid var(--cyan-bright);
+       padding: 20px 40px;
+       border-radius: 8px;
+       box-shadow: 0 0 20px rgba(0, 245, 212, 0.1);
+   }
+   
+   .result-stats p { margin: 10px 0; }
+   .result-stats span { color: var(--white-pure); font-weight: bold; font-size: 1.4rem; }
+   
+   .stars-container {
+       display: flex;
+       justify-content: center;
+       gap: 15px;
+       margin-bottom: 20px;
+       font-size: 3rem;
+       color: var(--grid-line);
+   }
+   
+   .stars-container .star.earned {
+       color: var(--orange-alert);
+       animation: starPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+       text-shadow: 0 0 15px rgba(247, 127, 0, 0.8);
+   }
+   
+   @keyframes starPop {
+       0% { transform: scale(0); opacity: 0; }
+       80% { transform: scale(1.2); }
+       100% { transform: scale(1); opacity: 1; }
+   }
+   
+   /* صندوق التسويق (Promo Banner) */
+   #promo-container {
+       background: linear-gradient(90deg, rgba(247, 127, 0, 0.1), rgba(247, 127, 0, 0.05));
+       border-left: 4px solid var(--orange-alert);
+       padding: 15px;
+       margin-bottom: 30px;
+       width: 90%;
+       max-width: 350px;
+       text-align: center;
+       border-radius: 0 4px 4px 0;
+   }
+   
+   #promo-text {
+       color: var(--white-pure);
+       font-size: 0.9rem;
+       margin-bottom: 10px;
+       line-height: 1.4;
+   }
+   
+   .promo-btn {
+       display: inline-block;
+       background: var(--orange-alert);
+       color: var(--bg-deep);
+       text-decoration: none;
+       padding: 8px 15px;
+       font-weight: bold;
+       font-size: 0.9rem;
+       border-radius: 4px;
+       transition: all 0.2s;
+   }
+   
+   .promo-btn:hover {
+       background: #ff9b29;
+       box-shadow: 0 0 10px rgba(247, 127, 0, 0.5);
+   }
+   
+   /* نافذة التأكيد (Modal) */
+   .modal-box {
+       background: var(--bg-deep);
+       border: 2px solid var(--danger-red);
+       padding: 30px;
+       border-radius: 8px;
+       text-align: center;
+       max-width: 90%;
+       box-shadow: 0 0 30px rgba(239, 35, 60, 0.2);
+   }
+   
+   .modal-box p {
+       margin-bottom: 25px;
+       line-height: 1.6;
+       color: var(--text-muted);
+   }
