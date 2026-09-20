@@ -3,11 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vector Space Defender</title>
+    <title>المدافع الفضائي</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="app-container">
+        <!-- الهيدر (الإعلان) -->
+        <header id="promo-header" class="hidden">
+            <span id="promo-text"></span>
+            <a id="promo-link" href="#" target="_blank" class="promo-btn"></a>
+        </header>
+
         <!-- طبقة معلومات اللعبة (HUD) -->
         <div id="hud" class="hidden">
             <div class="hud-stat">المرحلة: <span id="hud-level">1</span></div>
@@ -19,43 +25,34 @@
         <!-- محرك الرسم (Canvas) -->
         <canvas id="game-canvas" width="480" height="800"></canvas>
 
-        <!-- طبقات واجهة المستخدم (UI Overlays) -->
-        
         <!-- القائمة الرئيسية -->
         <div id="screen-main" class="ui-screen active">
             <div class="title-container">
-                <h1>VECTOR</h1>
-                <h2>SPACE DEFENDER</h2>
-                <p class="subtitle">Blueprint Tactical Edition</p>
+                <h1>المدافع الفضائي</h1>
             </div>
             
-            <div id="promo-container" class="hidden">
-                <p id="promo-text"></p>
-                <a id="promo-link" href="#" target="_blank" class="promo-btn"></a>
-            </div>
-
             <div class="menu-actions">
-                <button id="btn-start" class="action-btn primary">بدء المهمة</button>
-                <button id="btn-to-levels" class="action-btn secondary">المراحل التكتيكية</button>
+                <button id="btn-start" class="action-btn primary">بدء اللعب</button>
+                <button id="btn-to-levels" class="action-btn secondary">المراحل</button>
             </div>
         </div>
 
         <!-- شاشة اختيار المراحل -->
         <div id="screen-levels" class="ui-screen hidden">
-            <h2>بنك المراحل</h2>
+            <h2>المراحل</h2>
             <div id="level-select-grid" class="grid-container"></div>
             
             <div class="menu-actions bottom-actions">
-                <button id="btn-back-main" class="action-btn secondary">عودة للقيادة</button>
+                <button id="btn-back-main" class="action-btn secondary">عودة</button>
                 <button id="btn-reset-progress" class="action-btn danger">إعادة ضبط التقدم</button>
             </div>
         </div>
 
         <!-- شاشة الإيقاف المؤقت -->
         <div id="screen-pause" class="ui-screen hidden overlay-bg">
-            <h2>النظام متوقف</h2>
+            <h2>توقف</h2>
             <div class="menu-actions">
-                <button id="btn-resume" class="action-btn primary">متابعة الاشتباك</button>
+                <button id="btn-resume" class="action-btn primary">متابعة</button>
                 <button id="btn-quit-to-main" class="action-btn danger">انسحاب</button>
             </div>
         </div>
@@ -65,9 +62,7 @@
             <h2 id="result-title">تمت الإبادة</h2>
             
             <div class="result-stats">
-                <div class="stars-container" id="result-stars">
-                    <!-- النجوم ستُولد برمجياً -->
-                </div>
+                <div class="stars-container" id="result-stars"></div>
                 <p>النقاط: <span id="result-score">0</span></p>
                 <p>دقة الإصابة: <span id="result-accuracy">0</span>%</p>
             </div>
@@ -79,21 +74,24 @@
             </div>
         </div>
 
-    </div>
-
-    <!-- نافذة التأكيد (Modal) لإعادة الضبط -->
-    <div id="modal-confirm" class="ui-screen hidden overlay-bg">
-        <div class="modal-box">
-            <h3>تحذير أمني</h3>
-            <p>هل أنت متأكد من رغبتك في مسح كافة البيانات التكتيكية ونجوم المراحل؟ لا يمكن التراجع عن هذا الإجراء.</p>
-            <div class="menu-actions row">
-                <button id="btn-confirm-reset" class="action-btn danger">نعم، امسح البيانات</button>
-                <button id="btn-cancel-reset" class="action-btn secondary">إلغاء</button>
+        <!-- نافذة التأكيد (Modal) لإعادة الضبط -->
+        <div id="modal-confirm" class="ui-screen hidden overlay-bg">
+            <div class="modal-box">
+                <h3>تحذير</h3>
+                <p>هل أنت متأكد من مسح البيانات؟</p>
+                <div class="menu-actions row">
+                    <button id="btn-confirm-reset" class="action-btn danger">نعم</button>
+                    <button id="btn-cancel-reset" class="action-btn secondary">إلغاء</button>
+                </div>
             </div>
         </div>
+
+        <!-- الفوتر (الحقوق) -->
+        <footer id="app-footer">
+            <p>جميع الحقوق محفوظة &copy; ريشة</p>
+        </footer>
     </div>
 
-    <!-- استدعاء المحرك الميكانيكي -->
     <script src="game.js"></script>
 </body>
 </html>
