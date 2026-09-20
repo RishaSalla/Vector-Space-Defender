@@ -687,10 +687,17 @@ function switchScreen(screenId) {
         el.classList.remove('active');
         el.classList.add('hidden');
     });
-    if(screenId) {
-        document.getElementById(`screen-${screenId}`).classList.remove('hidden');
-        document.getElementById(`screen-${screenId}`).classList.add('active');
+    
+    // نبحث عن العنصر أولاً
+    let targetScreen = document.getElementById(`screen-${screenId}`);
+    
+    // إذا كان العنصر موجوداً في الـ HTML، نقوم بتعديله
+    if(targetScreen) {
+        targetScreen.classList.remove('hidden');
+        targetScreen.classList.add('active');
     }
+    
+    // تحديث حالة اللعبة سيتم بنجاح دائماً الآن
     state.screen = screenId;
 }
 
