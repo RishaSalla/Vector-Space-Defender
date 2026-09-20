@@ -1,18 +1,18 @@
 /**
  * Vector Space Defender - Blueprint Tactical Edition
- * Core Game Engine (Optimized & Bug-Free)
+ * Core Game Engine (Final Optimized & Bug-Free)
  */
 
-// 1. الواجهة التسويقية المرنة (Promo Config)
+// 1. إعدادات الهيدر الإعلاني التسويقي
 const PROMO_CONFIG = {
     showBanner: true,
-    text: "استكشف أحدث الألعاب والمنتجات الرقمية على ريشة!",
+    text: "استكشف الألعاب والمنتجات الرقمية على ريشه!",
     buttonText: "زيارة المتجر",
     url: "https://www.risha.sa"
 };
 
 // ============================================================================
-// 2. إعدادات المحرك والثوابت (Engine Config & Constants)
+// 2. إعدادات المحرك والثوابت
 // ============================================================================
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d', { alpha: true });
@@ -30,7 +30,7 @@ let GAME_WIDTH = 480;
 let GAME_HEIGHT = 800;
 
 // ============================================================================
-// 3. المحرك الصوتي الناعم (Soft Audio Engine)
+// 3. المحرك الصوتي الناعم
 // ============================================================================
 const AudioEngine = (function() {
     let ctx = null;
@@ -82,7 +82,7 @@ const AudioEngine = (function() {
 })();
 
 // ============================================================================
-// 4. توليد البيانات التكتيكية للمراحل (25 Tactical Levels Generator)
+// 4. مولد المراحل التكتيكية (25 مرحلة)
 // ============================================================================
 function generateLevels() {
     const levels = [];
@@ -118,7 +118,7 @@ function generateLevels() {
 const LEVELS_DATA = generateLevels();
 
 // ============================================================================
-// 5. إدارة حالة اللعبة ونظام الحفظ (State & Save System)
+// 5. إدارة حالة اللعبة ونظام الحفظ
 // ============================================================================
 const SaveSystem = {
     data: { levels: [{ id: 1, stars: 0, unlocked: true }] },
@@ -169,7 +169,7 @@ let state = {
 };
 
 // ============================================================================
-// 6. مدخلات التحكم (Input Handling)
+// 6. مدخلات التحكم
 // ============================================================================
 const Input = {
     x: GAME_WIDTH / 2,
@@ -192,7 +192,6 @@ canvas.addEventListener('pointerdown', e => {
     Input.isFiring = true;
 });
 canvas.addEventListener('pointermove', e => {
-    // تم إزالة شرط (isFiring) لتتحرك المركبة دائماً مع المؤشر
     if (state.screen !== 'playing') return;
     updateInputCoord(e.clientX, e.clientY);
 });
@@ -209,7 +208,7 @@ window.addEventListener('keyup', e => {
 });
 
 // ============================================================================
-// 7. الكيانات ومجمعات الكائنات المطورة (Object Pooling - Ring Buffer)
+// 7. مجمعات الكائنات (Ring Buffer Object Pooling)
 // ============================================================================
 const Pool = {
     bullets: Array.from({ length: 150 }, () => ({ active: false })), bIdx: 0,
@@ -219,7 +218,6 @@ const Pool = {
     emps: Array.from({ length: 5 }, () => ({ active: false, radius: 0 })), empIdx: 0
 };
 
-// دالة ذكية للبحث الفوري بدون استهلاك معالج (O(1) Ring Buffer)
 function getFromPool(poolArray, indexKey) {
     for (let i = 0; i < poolArray.length; i++) {
         Pool[indexKey] = (Pool[indexKey] + 1) % poolArray.length;
@@ -234,7 +232,7 @@ function getEnemy() { return getFromPool(Pool.enemies, 'eIdx'); }
 function getPowerup() { return getFromPool(Pool.powerups, 'pwIdx'); }
 function getEMP() { return getFromPool(Pool.emps, 'empIdx'); }
 
-// ----- اللاعب (Player) -----
+// ----- اللاعب -----
 const Player = {
     x: GAME_WIDTH / 2,
     y: GAME_HEIGHT * 0.8,
@@ -254,11 +252,9 @@ const Player = {
             if (Input.keys['ArrowUp'] || Input.keys['KeyW']) this.y -= this.speed * dt;
             if (Input.keys['ArrowDown'] || Input.keys['KeyS']) this.y += this.speed * dt;
             
-            // مزامنة الماوس مع الكيبورد لمنع الانزلاق (Fix Bug #1)
             Input.x = this.x;
             Input.y = this.y + 40; 
         } else {
-            // اللمس/الماوس (معادلة Lerp بالتلاشي الأسي للحركة الناعمة - Fix Bug #2)
             let lerpFactor = 1 - Math.exp(-15 * dt);
             this.x += (Input.x - this.x) * lerpFactor;
             this.y += (Input.y - 40 - this.y) * lerpFactor; 
@@ -277,9 +273,7 @@ const Player = {
     },
 
     shoot() {
-        // تُحسب الطلقة المزدوجة كعملية إطلاق واحدة في نظام التقييم (Fix Bug #8)
         state.shotsFired++; 
-        
         if (this.twinBeamTime > 0) {
             this.spawnBullet(this.x - 8, this.y, -800, COLORS.cyan);
             this.spawnBullet(this.x + 8, this.y, -800, COLORS.cyan);
@@ -296,45 +290,10 @@ const Player = {
             b.x = x; b.y = y; b.vy = vy; b.vx = 0;
             b.color = color; b.size = 2;
         }
-    },
-
-    draw() {
-        ctx.save();
-        ctx.translate(this.x, this.y);
-        
-        if (this.shield) {
-            ctx.beginPath();
-            ctx.arc(0, 0, this.size + 10, 0, Math.PI * 2);
-            ctx.strokeStyle = COLORS.shield;
-            ctx.lineWidth = 2;
-            ctx.setLineDash([5, 5]);
-            ctx.stroke();
-            ctx.setLineDash([]);
-        }
-
-        ctx.beginPath();
-        ctx.moveTo(0, -this.size);
-        ctx.lineTo(this.size, this.size);
-        ctx.lineTo(0, this.size - 5);
-        ctx.lineTo(-this.size, this.size);
-        ctx.closePath();
-        
-        ctx.strokeStyle = COLORS.cyan;
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        
-        ctx.beginPath();
-        ctx.moveTo(-5, this.size);
-        ctx.lineTo(0, this.size + 10 + Math.random()*5);
-        ctx.lineTo(5, this.size);
-        ctx.strokeStyle = COLORS.white;
-        ctx.stroke();
-
-        ctx.restore();
     }
 };
 
-// ----- الأعداء (Enemies) -----
+// ----- الأعداء -----
 function spawnEnemy(data) {
     let e = getEnemy();
     if (e) {
@@ -356,7 +315,6 @@ function spawnEnemy(data) {
 function updateEnemies(dt, speedMult) {
     Pool.enemies.forEach(e => {
         if (!e.active) return;
-        
         if (e.delay > 0) { e.delay -= dt; return; }
 
         e.timer += dt;
@@ -403,14 +361,178 @@ function fireEnemyBullet(enemy, count = 1) {
     }
 }
 
-function drawEnemies(speedMult) {
+// ----- الجزيئات والطلقات والجوائز -----
+function spawnExplosion(x, y, color, count) {
+    AudioEngine.explosion();
+    for (let i = 0; i < count; i++) {
+        let p = getParticle();
+        if (p) {
+            p.active = true; p.x = x; p.y = y;
+            let angle = Math.random() * Math.PI * 2;
+            let speed = 50 + Math.random() * 150;
+            p.vx = Math.cos(angle) * speed; p.vy = Math.sin(angle) * speed;
+            p.life = 0.5 + Math.random() * 0.5; p.maxLife = p.life;
+            p.color = color;
+        }
+    }
+}
+
+function spawnPowerup(x, y) {
+    if (Math.random() > 0.15) return;
+    let p = getPowerup();
+    if (p) {
+        p.active = true; p.x = x; p.y = y; p.vy = 80;
+        const types = ['shield', 'twin', 'emp'];
+        p.type = types[Math.floor(Math.random() * types.length)];
+        p.color = p.type === 'shield' ? COLORS.shield : (p.type === 'twin' ? COLORS.cyan : COLORS.electric);
+    }
+}
+
+function activateEMP() {
+    AudioEngine.emp();
+    let emp = getEMP();
+    if (emp) { emp.active = true; emp.radius = 1; emp.x = Player.x; emp.y = Player.y; }
+    Pool.bullets.forEach(b => { if (b.active && b.isEnemy) b.active = false; });
+}
+
+// ============================================================================
+// 8. منطق التحديث والرسم المنفصل (لضمان ظهور الطلقات والمؤثرات)
+// ============================================================================
+function updateGame(dt) {
+    let aliveEnemies = Pool.enemies.filter(e => e.active).length;
+    let speedMult = (aliveEnemies > 0 && aliveEnemies <= 2) ? 1.25 : 1.0;
+
+    Player.update(dt);
+    updateEnemies(dt, speedMult);
+
+    // تحديث الطلقات
+    Pool.bullets.forEach(b => {
+        if (!b.active) return;
+        b.x += b.vx * dt; b.y += b.vy * dt;
+        if (b.y < -50 || b.y > GAME_HEIGHT + 50 || b.x < -50 || b.x > GAME_WIDTH + 50) b.active = false;
+    });
+
+    // تحديث الجزيئات
+    Pool.particles.forEach(p => {
+        if (!p.active) return;
+        p.x += p.vx * dt; p.y += p.vy * dt;
+        p.life -= dt;
+        if (p.life <= 0) p.active = false;
+    });
+
+    // تحديث الجوائز
+    Pool.powerups.forEach(p => {
+        if (!p.active) return;
+        p.y += p.vy * dt;
+        if (p.y > GAME_HEIGHT) p.active = false;
+    });
+
+    // تحديث النبضات
+    Pool.emps.forEach(emp => {
+        if (!emp.active) return;
+        emp.radius += 1000 * dt;
+        if (emp.radius > GAME_WIDTH) emp.active = false;
+    });
+
+    checkCollisions();
+
+    if (aliveEnemies === 0 && !state.isVictory) {
+        let pendingSpawns = Pool.enemies.some(e => e.active && e.delay > 0);
+        if (!pendingSpawns) {
+            state.isVictory = true;
+            setTimeout(() => gameOver(true), 1500);
+        }
+    }
+}
+
+function drawGame() {
+    ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+    // 1. رسم الطلقات
+    Pool.bullets.forEach(b => {
+        if (!b.active) return;
+        ctx.strokeStyle = b.color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(b.x, b.y);
+        ctx.lineTo(b.x, b.y + (b.vy > 0 ? -10 : 10)); 
+        ctx.stroke();
+    });
+
+    // 2. رسم الجزيئات (الشظايا)
+    Pool.particles.forEach(p => {
+        if (!p.active) return;
+        ctx.strokeStyle = p.color;
+        ctx.globalAlpha = p.life / p.maxLife;
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(p.x + p.vx * 0.05, p.y + p.vy * 0.05);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+    });
+
+    // 3. رسم جوائز القوة
+    Pool.powerups.forEach(p => {
+        if (!p.active) return;
+        ctx.strokeStyle = p.color;
+        ctx.lineWidth = 2;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(Date.now() / 300);
+        ctx.beginPath();
+        ctx.rect(-8, -8, 16, 16);
+        ctx.stroke();
+        ctx.fillStyle = p.color;
+        ctx.font = '10px Share Tech Mono';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(p.type === 'shield' ? 'S' : (p.type === 'twin' ? 'T' : 'E'), 0, 0);
+        ctx.restore();
+    });
+
+    // 4. رسم النبضات
+    Pool.emps.forEach(emp => {
+        if (!emp.active) return;
+        ctx.beginPath();
+        ctx.arc(emp.x, emp.y, emp.radius, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(0, 180, 216, ${Math.max(0, 1 - emp.radius/GAME_WIDTH)})`;
+        ctx.lineWidth = 5;
+        ctx.stroke();
+    });
+
+    // 5. رسم اللاعب
+    ctx.save();
+    ctx.translate(Player.x, Player.y);
+    if (Player.shield) {
+        ctx.beginPath();
+        ctx.arc(0, 0, Player.size + 10, 0, Math.PI * 2);
+        ctx.strokeStyle = COLORS.shield;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+    }
+    ctx.beginPath();
+    ctx.moveTo(0, -Player.size);
+    ctx.lineTo(Player.size, Player.size);
+    ctx.lineTo(0, Player.size - 5);
+    ctx.lineTo(-Player.size, Player.size);
+    ctx.closePath();
+    ctx.strokeStyle = COLORS.cyan;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
+
+    // 6. رسم الأعداء
+    let aliveEnemies = Pool.enemies.filter(e => e.active).length;
+    let speedMult = (aliveEnemies > 0 && aliveEnemies <= 2) ? 1.25 : 1.0;
+    
     Pool.enemies.forEach(e => {
         if (!e.active || e.delay > 0) return;
         ctx.save();
         ctx.translate(e.x, e.y);
         ctx.strokeStyle = e.color;
         ctx.lineWidth = 2;
-
         if (speedMult > 1) { ctx.shadowBlur = 10; ctx.shadowColor = e.color; }
 
         ctx.beginPath();
@@ -437,122 +559,8 @@ function drawEnemies(speedMult) {
     });
 }
 
-// ----- الجزيئات (Particles) -----
-function spawnExplosion(x, y, color, count) {
-    AudioEngine.explosion();
-    for (let i = 0; i < count; i++) {
-        let p = getParticle();
-        if (p) {
-            p.active = true; p.x = x; p.y = y;
-            let angle = Math.random() * Math.PI * 2;
-            let speed = 50 + Math.random() * 150;
-            p.vx = Math.cos(angle) * speed; p.vy = Math.sin(angle) * speed;
-            p.life = 0.5 + Math.random() * 0.5; p.maxLife = p.life;
-            p.color = color;
-        }
-    }
-}
-
-function updateDrawParticles(dt) {
-    Pool.particles.forEach(p => {
-        if (!p.active) return;
-        p.x += p.vx * dt; p.y += p.vy * dt;
-        p.life -= dt;
-        if (p.life <= 0) p.active = false;
-        else {
-            ctx.strokeStyle = p.color;
-            ctx.globalAlpha = p.life / p.maxLife;
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(p.x + p.vx * 0.05, p.y + p.vy * 0.05);
-            ctx.stroke();
-            ctx.globalAlpha = 1;
-        }
-    });
-}
-
-// ----- الرصاص (Bullets) -----
-function updateDrawBullets(dt) {
-    Pool.bullets.forEach(b => {
-        if (!b.active) return;
-        b.x += b.vx * dt; b.y += b.vy * dt;
-        
-        if (b.y < -50 || b.y > GAME_HEIGHT + 50 || b.x < -50 || b.x > GAME_WIDTH + 50) b.active = false;
-
-        if (b.active) {
-            ctx.strokeStyle = b.color;
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(b.x, b.y);
-            ctx.lineTo(b.x, b.y + (b.vy > 0 ? -10 : 10)); 
-            ctx.stroke();
-        }
-    });
-}
-
-// ----- جوائز القوة والنبضات (PowerUps & EMPs) -----
-function spawnPowerup(x, y) {
-    if (Math.random() > 0.15) return;
-    let p = getPowerup();
-    if (p) {
-        p.active = true; p.x = x; p.y = y; p.vy = 80;
-        const types = ['shield', 'twin', 'emp'];
-        p.type = types[Math.floor(Math.random() * types.length)];
-        p.color = p.type === 'shield' ? COLORS.shield : (p.type === 'twin' ? COLORS.cyan : COLORS.electric);
-    }
-}
-
-function updateDrawPowerups(dt) {
-    Pool.powerups.forEach(p => {
-        if (!p.active) return;
-        p.y += p.vy * dt;
-        if (p.y > GAME_HEIGHT) p.active = false;
-
-        ctx.strokeStyle = p.color;
-        ctx.lineWidth = 2;
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate(Date.now() / 300);
-        ctx.beginPath();
-        ctx.rect(-8, -8, 16, 16);
-        ctx.stroke();
-        ctx.fillStyle = p.color;
-        ctx.font = '10px Share Tech Mono';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(p.type === 'shield' ? 'S' : (p.type === 'twin' ? 'T' : 'E'), 0, 0);
-        ctx.restore();
-    });
-}
-
-function activateEMP() {
-    AudioEngine.emp();
-    let emp = getEMP();
-    if (emp) {
-        emp.active = true;
-        emp.radius = 1;
-        emp.x = Player.x;
-        emp.y = Player.y;
-    }
-    // تدمير الطلقات المعادية الموجودة حالياً
-    Pool.bullets.forEach(b => { if (b.active && b.isEnemy) b.active = false; });
-}
-
-function updateDrawEMPs(dt) {
-    Pool.emps.forEach(emp => {
-        if (!emp.active) return;
-        emp.radius += 1000 * dt;
-        ctx.beginPath();
-        ctx.arc(emp.x, emp.y, emp.radius, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(0, 180, 216, ${Math.max(0, 1 - emp.radius/GAME_WIDTH)})`;
-        ctx.lineWidth = 5;
-        ctx.stroke();
-        if (emp.radius > GAME_WIDTH) emp.active = false;
-    });
-}
-
 // ============================================================================
-// 8. المنطق الأساسي والتصادم (Collisions & Game Loop)
+// 9. التصادمات وإدارة الحلقة الرئيسية
 // ============================================================================
 function checkCollisions() {
     Pool.bullets.filter(b => b.active && !b.isEnemy).forEach(b => {
@@ -599,7 +607,7 @@ function checkCollisions() {
 function applyPowerup(type) {
     AudioEngine.powerup();
     if (type === 'shield') {
-        if (Player.shield) addScore(500); // تعويض ذكي لمن يمتلك درعاً مسبقاً (Fix Bug #7)
+        if (Player.shield) addScore(500);
         else Player.shield = true;
     }
     else if (type === 'twin') Player.twinBeamTime = 4; 
@@ -633,54 +641,21 @@ function updateHUD() {
     document.getElementById('hud-level').innerText = state.level;
 }
 
-// ============================================================================
-// 9. الدورة الرئيسية وإدارة الشاشات (Main Loop & UI Transitions)
-// ============================================================================
-function update(dt) {
-    let aliveEnemies = Pool.enemies.filter(e => e.active).length;
-    let speedMult = (aliveEnemies > 0 && aliveEnemies <= 2) ? 1.25 : 1.0;
-
-    Player.update(dt);
-    updateEnemies(dt, speedMult);
-    updateDrawBullets(dt);
-    updateDrawParticles(dt);
-    updateDrawPowerups(dt);
-    updateDrawEMPs(dt); // النبضات المتعددة (Fix Bug #6)
-    checkCollisions();
-
-    if (aliveEnemies === 0 && !state.isVictory) {
-        let pendingSpawns = Pool.enemies.some(e => e.active && e.delay > 0);
-        if (!pendingSpawns) {
-            state.isVictory = true;
-            setTimeout(() => gameOver(true), 1500);
-        }
-    }
-}
-
-function draw() {
-    ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-    Player.draw();
-    let aliveEnemies = Pool.enemies.filter(e => e.active).length;
-    let speedMult = (aliveEnemies > 0 && aliveEnemies <= 2) ? 1.25 : 1.0;
-    drawEnemies(speedMult);
-}
-
 function loop(timestamp) {
     if (!state.lastTime) state.lastTime = timestamp;
     let dt = (timestamp - state.lastTime) / 1000;
     state.lastTime = timestamp;
     if (dt > 0.1) dt = 0.1; 
     
-    // تجميد إطار الشاشة بالكامل عند الإيقاف المؤقت (Fix Bug #3)
     if (state.screen === 'playing') {
-        update(dt);
-        draw();
+        updateGame(dt);
+        drawGame();
     }
     state.reqId = requestAnimationFrame(loop);
 }
 
 // ============================================================================
-// 10. واجهة المستخدم والربط (UI Binding)
+// 10. واجهة المستخدم والربط (مع إصلاح الانهيار الصامت للشاشات)
 // ============================================================================
 function switchScreen(screenId) {
     document.querySelectorAll('.ui-screen').forEach(el => {
@@ -688,16 +663,11 @@ function switchScreen(screenId) {
         el.classList.add('hidden');
     });
     
-    // نبحث عن العنصر أولاً
     let targetScreen = document.getElementById(`screen-${screenId}`);
-    
-    // إذا كان العنصر موجوداً في الـ HTML، نقوم بتعديله
     if(targetScreen) {
         targetScreen.classList.remove('hidden');
         targetScreen.classList.add('active');
     }
-    
-    // تحديث حالة اللعبة سيتم بنجاح دائماً الآن
     state.screen = screenId;
 }
 
@@ -765,10 +735,9 @@ function gameOver(victory) {
     document.getElementById('hud').classList.add('hidden');
     switchScreen('result');
     
-    // تقييد نسبة الدقة القصوى بـ 100% للتسامح مع الطلقات المزدوجة
     let acc = state.shotsFired > 0 ? Math.min(100, Math.round((state.shotsHit / state.shotsFired) * 100)) : 0;
     
-    document.getElementById('result-title').innerText = victory ? "القطاع آمن - تمت المهمة" : "فشلت المهمة - تحطمت المركبة";
+    document.getElementById('result-title').innerText = victory ? "تمت المهمة بنجاح" : "فشلت المهمة - تحطمت المركبة";
     document.getElementById('result-title').style.color = victory ? COLORS.cyan : COLORS.danger;
     
     document.getElementById('result-score').innerText = state.score;
@@ -793,15 +762,12 @@ function gameOver(victory) {
     }
 }
 
-// ----------------------------------------------------------------------------
-// ربط الأزرار وإعداد التسويق (Bindings & Promo Setup)
-// ----------------------------------------------------------------------------
 window.onload = () => {
     canvas.width = GAME_WIDTH;
     canvas.height = GAME_HEIGHT;
 
     if (PROMO_CONFIG.showBanner) {
-        document.getElementById('promo-container').classList.remove('hidden');
+        document.getElementById('promo-header').classList.remove('hidden');
         document.getElementById('promo-text').innerText = PROMO_CONFIG.text;
         const pLink = document.getElementById('promo-link');
         pLink.innerText = PROMO_CONFIG.buttonText;
